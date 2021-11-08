@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import styles from "../styles/Home.module.css";
 
 type Talk = {
@@ -8,16 +8,47 @@ type Talk = {
   abstract: string;
 };
 
+type Errors = {
+  title: string | null;
+  abstract: string | null;
+};
+
 const newTalk: Talk = {
   title: "",
   abstract: "",
 };
 
+type Status = "Idle" | "Submitted" | "Complete";
+
 export default function Home() {
+  const [status, setStatus] = useState<Status>("Idle");
   const [talk, setTalk] = useState(newTalk);
 
-  function onChange(event: ChangeEvent<HTMLInputElement>) {
+  // Derived state
+  const errors = validate();
+
+  function onChange(
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
     setTalk({ ...talk, [event.target.id]: event.target.value });
+  }
+
+  function validate() {
+    const errors: Errors = {
+      abstract: null,
+      title: null,
+    };
+    if (status === "Submitted" && !talk.title) {
+      errors.title = "Title is required.";
+    }
+    if (status === "Submitted" && !talk.abstract)
+      errors.abstract = "Abstract is required.";
+    return errors;
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); // stop postback
+    setStatus("Submitted");
   }
 
   return (
@@ -31,7 +62,7 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>Speak at ConnectTech!</h1>
 
-        <form>
+        <form onSubmit={handleSubmit}>
           <h2>Submit a talk</h2>
           <div>
             <label htmlFor="title">Title</label>
@@ -42,11 +73,13 @@ export default function Home() {
               value={talk.title}
               onChange={onChange}
             />
+            {errors.title && <p>{errors.title}</p>}
           </div>
           <div>
             <label htmlFor="abstract">Abstract</label>
             <br />
             <textarea id="abstract" value={talk.abstract} onChange={onChange} />
+            {errors.abstract && <p>{errors.abstract}</p>}
           </div>
           <input type="submit" value="Submit talk" />
         </form>
