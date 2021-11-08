@@ -23,9 +23,11 @@ type Status = "Idle" | "Submitted" | "Complete";
 export default function Home() {
   const [status, setStatus] = useState<Status>("Idle");
   const [talk, setTalk] = useState(newTalk);
+  const [talks, setTalks] = useState<Talk[]>([]);
 
   // Derived state
   const errors = validate();
+  const isValid = Object.entries(errors).every(([, error]) => !error);
 
   function onChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -38,17 +40,19 @@ export default function Home() {
       abstract: null,
       title: null,
     };
-    if (status === "Submitted" && !talk.title) {
-      errors.title = "Title is required.";
-    }
-    if (status === "Submitted" && !talk.abstract)
-      errors.abstract = "Abstract is required.";
+    if (!talk.title) errors.title = "Title is required.";
+    if (!talk.abstract) errors.abstract = "Abstract is required.";
     return errors;
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); // stop postback
     setStatus("Submitted");
+    if (!isValid) return;
+    // TODO: Actually save stuff.
+    setTalks([...talks, talk]);
+    setStatus("Complete");
+    setTalk(newTalk); // Clear the form
   }
 
   return (
@@ -62,6 +66,15 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>Speak at ConnectTech!</h1>
 
+        <section>
+          <h2>Submitted Talks</h2>
+          <ul>
+            {talks.map((t) => (
+              <li key={t.title}>{t.title}</li>
+            ))}
+          </ul>
+        </section>
+
         <form onSubmit={handleSubmit}>
           <h2>Submit a talk</h2>
           <div>
@@ -73,13 +86,15 @@ export default function Home() {
               value={talk.title}
               onChange={onChange}
             />
-            {errors.title && <p>{errors.title}</p>}
+            {errors.title && status === "Submitted" && <p>{errors.title}</p>}
           </div>
           <div>
             <label htmlFor="abstract">Abstract</label>
             <br />
             <textarea id="abstract" value={talk.abstract} onChange={onChange} />
-            {errors.abstract && <p>{errors.abstract}</p>}
+            {errors.abstract && status === "Submitted" && (
+              <p>{errors.abstract}</p>
+            )}
           </div>
           <input type="submit" value="Submit talk" />
         </form>
