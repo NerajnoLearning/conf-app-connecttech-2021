@@ -1,12 +1,17 @@
 import Head from "next/head";
 import Image from "next/image";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEventHandler, useState } from "react";
 import styles from "../styles/Home.module.css";
 
 type Talk = {
   title: string;
   abstract: string;
 };
+
+type Errors = {
+title: string | null;
+abstract: string | null;
+}
 
 const newTalk: Talk = {
   title: "",
@@ -16,9 +21,23 @@ const newTalk: Talk = {
 export default function Home() {
   const [talk, setTalk] = useState(newTalk);
 
-  function onChange(event: ChangeEvent<HTMLInputElement>) {
+
+  function onChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setTalk({ ...talk, [event.target.id]: event.target.value });
   }
+
+function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault(); // stop postback
+  
+}
+  
+function validate() {
+  const errors = Errors = {
+  abstract: null,
+  title: null,
+};
+if(!talk.title) error.title = "Title is required."
+}
 
   return (
     <div className={styles.container}>
@@ -31,7 +50,7 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>Speak at ConnectTech!</h1>
 
-        <form>
+        <form onSubmit={handleSubmit}>
           <h2>Submit a talk</h2>
           <div>
             <label htmlFor="title">Title</label>
