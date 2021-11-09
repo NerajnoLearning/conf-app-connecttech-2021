@@ -25,7 +25,9 @@ export default function Home() {
   const [talk, setTalk] = useState(newTalk);
   const [talks, setTalks] = useState<Talk[]>([]);
 
-  //Derived 
+  // Derived state
+  const errors = validate();
+  const isValid = Object.entries(errors).every(([, error]) => !error);
 
   function onChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
